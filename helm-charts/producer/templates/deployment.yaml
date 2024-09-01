@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-producer
+  name: {{ .Release.Name }}
   labels:
-    app: {{ .Release.Name }}-producer
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-producer
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-producer
+        app: {{ .Release.Name }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
