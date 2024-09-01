@@ -27,7 +27,6 @@ pipeline {
                     sh 'helm repo update'
                     sh """
                     helm upgrade --install rabbitmq bitnami/rabbitmq --version 10.2.1 \
-                    --namespace your-namespace \
                     --set auth.username=${RABBITMQ_USERNAME} \
                     --set auth.password=${RABBITMQ_PASSWORD} \
                     --set auth.erlangCookie=${RABBITMQ_ERLANG_COOKIE} \
