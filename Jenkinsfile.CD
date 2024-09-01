@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+    environment {
+        KUBE_CONFIG_CREDENTIALS = credentials('kube-config-creds')
+    }
+    stages {
+        stage('Checkout Helm Charts Repository') {
+            steps {
+                git 'https://github.com/DaniBron/k8s-project.git'
+            }
+        }
+        stage('Configure Kubernetes Context') {
+            steps {
+                script {
+                    writeFile file: 'kubeconfig', text: KUBE_CONFIG_CREDENTIALS
+                    env.KUBECONFIG = "${pwd()}/kubeconfig"
+                }
+            }
+        }
+        stage('Deploy using Helm') {
+            steps {
+                script {
+                    sh 'helm upgrade --install producer ./helm-charts/producer'
+                    sh 'helm upgrade --install consumer ./helm-charts/consumer'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            sh 'rm -f kubeconfig'
+        }
+    }
+}

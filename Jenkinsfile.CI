@@ -1,31 +1,45 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') 
+        PRODUCER_IMAGE = 'rfrcapital/producer-app:latest' 
+        CONSUMER_IMAGE = 'rfrcapital/consumer-app:latest'
     }
     stages {
-        stage('Clone repository') {
+        stage('Clone Repository') {
             steps {
                 git 'https://github.com/avielb/rmqp-example.git'
+            }
+        }
+        stage('Login to DockerHub') {
+            steps {
+                script {
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                }
             }
         }
         stage('Build Docker Images') {
             steps {
                 script {
-                    docker.build('producer', 'producer/.')
-                    docker.build('consumer', 'consumer/.')
+                    sh "docker build -t ${PRODUCER_IMAGE} ./producer"
+                    
+                    sh "docker build -t ${CONSUMER_IMAGE} ./consumer"
                 }
             }
         }
         stage('Push Docker Images') {
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-creds') {
-                        docker.image('producer').push()
-                        docker.image('consumer').push()
-                    }
+                    sh "docker push ${PRODUCER_IMAGE}"
+
+                    sh "docker push ${CONSUMER_IMAGE}"
                 }
             }
+        }
+    }
+    post {
+        always {
+            sh 'docker logout'
         }
     }
 }
