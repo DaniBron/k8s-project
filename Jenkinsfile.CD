@@ -38,8 +38,8 @@ pipeline {
         stage('Deploy using Helm') {
             steps {
                 script {
-                    sh 'helm upgrade --install producer ./helm-charts/producer'
-                    sh 'helm upgrade --install consumer ./helm-charts/consumer'
+                    sh 'helm upgrade --install producer ./producer'
+                    sh 'helm upgrade --install consumer ./consumer'
                 }
             }
         }
