@@ -1,7 +1,10 @@
 pipeline {
     agent any
     environment {
-        KUBE_CONFIG_CREDENTIALS = credentials('kube-config-creds')
+        KUBE_CONFIG_CREDENTIALS = credentials('kube-config-creds') 
+        RABBITMQ_USERNAME = credentials('rabbitmq-username') 
+        RABBITMQ_PASSWORD = credentials('rabbitmq-password') 
+        RABBITMQ_ERLANG_COOKIE = credentials('rabbitmq-erlang-cookie')
     }
     stages {
         stage('Checkout Helm Charts Repository') {
@@ -14,6 +17,22 @@ pipeline {
                 script {
                     writeFile file: 'kubeconfig', text: KUBE_CONFIG_CREDENTIALS
                     env.KUBECONFIG = "${pwd()}/kubeconfig"
+                }
+            }
+        }
+        stage('Install or Upgrade RabbitMQ') {
+            steps {
+                script {
+                    sh 'helm repo add bitnami https://charts.bitnami.com/bitnami'
+                    sh 'helm repo update'
+                    sh """
+                    helm upgrade --install rabbitmq bitnami/rabbitmq --version 10.2.1 \
+                    --namespace your-namespace \
+                    --set auth.username=${RABBITMQ_USERNAME} \
+                    --set auth.password=${RABBITMQ_PASSWORD} \
+                    --set auth.erlangCookie=${RABBITMQ_ERLANG_COOKIE} \
+                    --set metrics.enabled=true
+                    """
                 }
             }
         }
